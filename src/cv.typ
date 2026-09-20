@@ -112,7 +112,7 @@
 
     for (item-index, item) in row.enumerate() {
       let (k, v) = item
-      if item-index > 0 { h-bar() }
+      if item-index > 0 { linebreak() }
 
       if k.contains("custom") {
         let awesome-icon = v.at("awesomeIcon", default: "")
@@ -227,7 +227,7 @@
   profile-photo,
   profile-photo-radius,
 ) = {
-  set image(height: 3.6cm)
+  set image(height: 3.6cm, width: 3.6cm)
   if display-profile-photo and profile-photo != none {
     box(profile-photo, radius: profile-photo-radius, clip: true)
   } else {
@@ -237,12 +237,12 @@
 
 /// Create header table
 /// -> content
-#let _make-header(contents, columns, align) = {
+#let _make-header(contents, rows, align) = {
   table(
-    columns: columns,
+    rows: rows,
     inset: 0pt,
     stroke: none,
-    column-gutter: 15pt,
+    row-gutter: 15pt,
     align: align + horizon,
     ..contents,
   )
@@ -295,7 +295,7 @@
   // split feels wrong.
   let display-name = metadata.personal.at("display_name", default: none)
 
-  let rendered-header-info = if header-info == auto {
+  let rendered-header-info = align(left, if header-info == auto {
     _make-header-info(
       personal-info,
       _personal-info-icons,
@@ -303,7 +303,7 @@
     )
   } else {
     header-info
-  }
+  })
 
   // Injection
   _inject(
@@ -338,7 +338,7 @@
   // Render header
   if display-profile-photo and profile-photo != none {
     _make-header(
-      (name-section, photo-section),
+      (photo-section, name-section),
       (auto, 20%),
       header-alignment,
     )
