@@ -651,7 +651,7 @@
       gutter: 6pt,
       align: (x, y) => if x == 1 { right } else { auto },
       table(
-        columns: (if display-logo and logo != "" { 4% } else { 0% }, 1fr),
+        columns: (if display-logo and logo != "" { 6% } else { 0% }, 1fr),
         inset: 0pt,
         stroke: 0pt,
         align: horizon,
@@ -673,7 +673,7 @@
     if display-logo and logo != "" {
       // With logo: 3-column layout
       table(
-        columns: (4%, 1fr, date-width),
+        columns: (6%, 1fr, date-width),
         inset: 0pt,
         stroke: 0pt,
         gutter: 6pt,
