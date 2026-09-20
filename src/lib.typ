@@ -127,14 +127,21 @@
   }
 }
 
-/// Render a CV document with footer, and page layout applied.
+/// Render a CV document with header, footer, and page layout applied.
 ///
 /// - metadata (dictionary): The metadata dictionary read from `metadata.toml`.
+/// - profile-photo (image | none): The profile photo to display in the header. Defaults to `none`; pass an `image(...)` to render. When `none`, the photo column is hidden regardless of `display_profile_photo`.
+/// - custom-icons (dictionary): Custom icons to override or extend the default icon set.
+/// - header-info (auto | none | str | content): (optional) customize the contact-information row. `auto` (default) renders `metadata.personal.info`; `none` removes the row; a string or content value replaces it while inheriting the default info typography. Use explicit `text(fill: ...)`, `h-bar()`, and `linebreak()` calls inside custom content for granular styling and layout.
 /// - doc (content): The body content of the CV (typically the imported modules).
 /// -> content
 #let cv(
   metadata,
   doc,
+  profile-photo: none,
+  custom-icons: (:),
+  header-info: auto,
+  left-banner: none,
 ) = {
   _check-v3-legacy(metadata)
   _check-v2-inject-legacy(metadata)
@@ -142,6 +149,15 @@
   // Update metadata state so component functions can read it without
   // having metadata threaded through every call site.
   _cv.cv-metadata.update(metadata)
+
+  if (
+    header-info != auto
+      and header-info != none
+      and type(header-info) != str
+      and type(header-info) != content
+  ) {
+    panic("header-info must be auto, none, a string, or content")
+  }
 
   let typography = _resolve-typography(metadata)
   set text(
@@ -158,34 +174,7 @@
     footer: context _cv._cv-footer(metadata),
   )
 
-  doc
-}
-
-/// Render the CV header.
-///
-/// - metadata (dictionary): The metadata dictionary read from `metadata.toml`.
-/// - profile-photo (image | none): The profile photo to display in the header. Defaults to `none`; pass an `image(...)` to render. When `none`, the photo column is hidden regardless of `display_profile_photo`.
-/// - custom-icons (dictionary): Custom icons to override or extend the default icon set.
-/// - header-info (auto | none | str | content): (optional) customize the contact-information row. `auto` (default) renders `metadata.personal.info`; `none` removes the row; a string or content value replaces it while inheriting the default info typography. Use explicit `text(fill: ...)`, `h-bar()`, and `linebreak()` calls inside custom content for granular styling and layout.
-/// -> content
-#let cv-header(
-  metadata,
-  profile-photo: none,
-  custom-icons: (:),
-  header-info: auto,
-) = {
-  if (
-    header-info != auto
-      and header-info != none
-      and type(header-info) != str
-      and type(header-info) != content
-  ) {
-    panic("header-info must be auto, none, a string, or content")
-  }
-
-  let typography = _resolve-typography(metadata)
-
-  _cv._cv-header(
+  let cv-header = _cv._cv-header(
     metadata,
     profile-photo,
     typography.header-font,
@@ -194,6 +183,51 @@
     custom-icons,
     header-info,
   )
+
+  let name-only-section = _cv._cv-header-name(
+    metadata,
+    typography.header-font,
+    _styles._regular-colors,
+    _styles._awesome-colors,
+  )
+
+  if metadata.template_style != "french" {
+    cv-header
+
+    doc
+  } else {
+    set page(margin: 0pt)
+
+    grid(
+      columns: (30%, 1fr),
+      gutter: 10pt,
+      [
+        #block(
+          fill: rgb("#ededee"),
+          height: 100%,
+          width: 100%,
+          inset: (x: 0.4cm, y: 1cm),
+          [
+            #cv-header
+
+            #left-banner
+          ],
+        )
+      ],
+      [
+        #block(
+          height: 100%,
+          width: 100%,
+          inset: (right: 1cm, y: 1cm),
+          [
+            #name-only-section
+
+            #doc
+          ],
+        )
+      ],
+    )
+  }
 }
 
 /// Render a cover letter document with header, footer, and page layout applied.

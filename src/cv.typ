@@ -104,7 +104,7 @@
 
 /// Generate personal info section
 /// -> content
-#let _make-header-info(personal-info, icons, custom-icons) = {
+#let _make-header-info(metadata, personal-info, icons, custom-icons) = {
   let rows = _normalize-header-info(personal-info, custom-icons: custom-icons)
 
   for (row-index, row) in rows.enumerate() {
@@ -112,7 +112,13 @@
 
     for (item-index, item) in row.enumerate() {
       let (k, v) = item
-      if item-index > 0 { linebreak() }
+      if item-index > 0 {
+        if metadata.template_style == "french" {
+          linebreak()
+        } else {
+          h-bar()
+        }
+      }
 
       if k.contains("custom") {
         let awesome-icon = v.at("awesomeIcon", default: "")
@@ -172,6 +178,20 @@
   }
 }
 
+/// TODO
+#let _make-header-name-only-section(
+  styles,
+  display-name,
+  first-name,
+  last-name,
+) = {
+  if display-name != none {
+    (styles.first-name)(display-name)
+  } else [#(styles.first-name)(first-name) #h(5pt) #(styles.last-name)(
+      last-name,
+    )]
+}
+
 /// Create header name section.
 ///
 /// When `display-name` is non-none it is rendered as a single styled string
@@ -180,6 +200,7 @@
 /// "first (light) + last (bold)" split is used.
 /// -> content
 #let _make-header-name-section(
+  metadata,
   styles,
   display-name,
   first-name,
@@ -187,13 +208,18 @@
   header-info,
   header-quote,
 ) = {
-  let rows = (
-    if display-name != none {
-      (styles.first-name)(display-name)
-    } else [#(styles.first-name)(first-name) #h(5pt) #(styles.last-name)(
-        last-name,
-      )],
+  let name = _make-header-name-only-section(
+    styles,
+    display-name,
+    first-name,
+    last-name,
   )
+
+  let rows = if metadata.template_style == "french" {
+    ()
+  } else {
+    (name,)
+  }
 
   if header-info != none {
     rows.push([#(styles.info)(header-info)])
@@ -237,15 +263,26 @@
 
 /// Create header table
 /// -> content
-#let _make-header(contents, rows, align) = {
-  table(
-    rows: rows,
-    inset: 0pt,
-    stroke: none,
-    row-gutter: 15pt,
-    align: align + horizon,
-    ..contents,
-  )
+#let _make-header(metadata, contents, rows, align) = {
+  if metadata.template_style == "french" {
+    table(
+      rows: rows,
+      inset: 0pt,
+      stroke: none,
+      row-gutter: 15pt,
+      align: align + horizon,
+      ..contents,
+    )
+  } else {
+    table(
+      columns: rows,
+      inset: 0pt,
+      stroke: none,
+      column-gutter: 15pt,
+      align: align + horizon,
+      ..contents,
+    )
+  }
 }
 
 /// Insert the header section of the CV.
@@ -269,6 +306,9 @@
 ) = {
   // Parameters
   let header-alignment = eval(metadata.layout.header.header_align)
+  if metadata.template_style == "french" {
+    header-alignment = center
+  }
   // Schema validation (incl. v2 inject migration guard) happens at the
   // cv() / letter() entry point, so by the time we read inject here it's
   // already been verified to not contain v2 keys.
@@ -295,15 +335,19 @@
   // split feels wrong.
   let display-name = metadata.personal.at("display_name", default: none)
 
-  let rendered-header-info = align(left, if header-info == auto {
+  let rendered-header-info = if header-info == auto {
     _make-header-info(
+      metadata,
       personal-info,
       _personal-info-icons,
       custom-icons,
     )
   } else {
     header-info
-  })
+  }
+  let rendered-header-info = if metadata.template_style == "french" {
+    align(left, rendered-header-info)
+  } else { rendered-header-info }
 
   // Injection
   _inject(
@@ -321,6 +365,7 @@
 
   // Create components
   let name-section = _make-header-name-section(
+    metadata,
     styles,
     display-name,
     first-name,
@@ -338,17 +383,69 @@
   // Render header
   if display-profile-photo and profile-photo != none {
     _make-header(
-      (photo-section, name-section),
+      metadata,
+      if metadata.template_style == "french" {
+        (photo-section, name-section)
+      } else {
+        (name-section, photo-section)
+      },
       (auto, 20%),
       header-alignment,
     )
   } else {
     _make-header(
+      metadata,
       (name-section,),
       (auto,),
       header-alignment,
     )
   }
+}
+
+/// Insert the header section of the CV.
+///
+/// - metadata (array): the metadata read from the TOML file.
+/// - profile-photo (content): the profile photo image.
+/// - header-font (array): the font of the header.
+/// - regular-colors (array): the regular colors of the CV.
+/// - awesome-colors (array): the awesome colors of the CV.
+/// - custom-icons (dictionary): pre-loaded image objects for custom personal info entries.
+/// - header-info (auto | none | str | content): contact information content. `auto` renders metadata.personal.info; `none` omits the row; strings or content replace the generated row.
+/// -> content
+#let _cv-header-name(
+  metadata,
+  header-font,
+  regular-colors,
+  awesome-colors,
+) = {
+  // Parameters
+  let first-name = metadata.personal.first_name
+  let last-name = metadata.personal.last_name
+  let header-info-font-size = eval(metadata.layout.header.at(
+    "info_font_size",
+    default: "10pt",
+  ))
+  let accent-color = _set-accent-color(_awesome-colors, metadata)
+
+  // display_name overrides the Latin split (first light + last bold) with a
+  // single styled string. Use this for CJK profiles or any profile where the
+  // split feels wrong.
+  let display-name = metadata.personal.at("display_name", default: none)
+
+  // Create styles
+  let styles = _header-styles(
+    header-font,
+    regular-colors,
+    accent-color,
+    header-info-font-size,
+  )
+
+  _make-header-name-only-section(
+    styles,
+    display-name,
+    first-name,
+    last-name,
+  )
 }
 
 /// Insert the footer section of the CV.
