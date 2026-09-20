@@ -1080,7 +1080,7 @@
   }
 
   table(
-    columns: (16%, 1fr, 15%),
+    columns: (18%, 1fr, 0%),
     inset: 0pt,
     column-gutter: 10pt,
     align: horizon,
