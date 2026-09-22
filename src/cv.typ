@@ -232,13 +232,17 @@
     columns: 1fr,
     inset: 0pt,
     stroke: none,
-    row-gutter: 6mm,
+    row-gutter: if metadata.template_style != "french" {
+      6mm
+    } else {
+      0mm
+    },
     ..rows,
   )
 
   // With neither contact info nor a quote, retain the single row-gutter that
   // normally separates the name from the rest of the document.
-  if rows.len() == 1 {
+  if rows.len() == 1 and metadata.template_style != "french" {
     [#result #v(6mm)]
   } else {
     result
@@ -389,7 +393,11 @@
       } else {
         (name-section, photo-section)
       },
-      (auto, 20%),
+      if metadata.template_style == "french" {
+        (auto, auto)
+      } else {
+        (auto, 20%)
+      },
       header-alignment,
     )
   } else {

@@ -168,9 +168,10 @@
   )
   set align(left)
   let paper-size = metadata.layout.at("paper_size", default: "a4")
+  let page-margin = _page-margin(paper-size)
   set page(
     paper: paper-size,
-    margin: _page-margin(paper-size),
+    margin: page-margin,
     footer: context _cv._cv-footer(metadata),
   )
 
@@ -206,7 +207,7 @@
           fill: rgb("#ededee"),
           height: 100%,
           width: 100%,
-          inset: (x: 0.4cm, y: 1cm),
+          inset: (x: 0.6cm, top: page-margin.top, bottom: page-margin.bottom),
           [
             #cv-header
 
@@ -218,7 +219,11 @@
         #block(
           height: 100%,
           width: 100%,
-          inset: (right: 1cm, y: 1cm),
+          inset: (
+            right: 0.6cm,
+            top: page-margin.top,
+            bottom: page-margin.bottom,
+          ),
           [
             #name-only-section
 
