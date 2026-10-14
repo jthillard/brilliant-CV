@@ -900,9 +900,14 @@
   color: none,
   metadata: none,
   awesome-colors: _awesome-colors,
+  date-width: none,
 ) = context {
   let metadata = _resolve-component-metadata(metadata)
   let params = _prepare-entry-params(metadata, awesome-colors, color: color)
+
+  if date-width != none {
+    params.date-width = date-width
+  }
 
   _make-cv-entry(
     "full",
@@ -1185,7 +1190,7 @@
   }
 
   table(
-    columns: (18%, 1fr, 0%),
+    columns: (27%, 1fr, 0%),
     inset: 0pt,
     column-gutter: 10pt,
     align: horizon,
@@ -1204,7 +1209,7 @@
     },
     honor-location-style(location),
   )
-  v(-6pt)
+  v(-3pt)
 }
 
 /// Add the publications to the CV by reading a bib file.

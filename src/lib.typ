@@ -200,7 +200,7 @@
     set page(margin: 0pt)
 
     grid(
-      columns: (30%, 1fr),
+      columns: (34%, 1fr),
       gutter: 10pt,
       [
         #block(
@@ -225,8 +225,7 @@
             bottom: page-margin.bottom,
           ),
           [
-            #name-only-section
-
+            #name-only-section \ #v(5pt)
             #doc
           ],
         )
