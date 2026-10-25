@@ -489,7 +489,9 @@
     // get squeezed into a third of the page (issue #173).
     table(
       columns: (auto, 1fr, auto),
-      inset: -5pt,
+      inset: if metadata.template_style == "french" { (y: -10pt) } else {
+        -5pt
+      },
       stroke: none,
       align(left, footer-style([#first-name #last-name])),
       align(center, footer-style(footer-text)),
@@ -498,7 +500,9 @@
   } else {
     table(
       columns: (1fr, auto),
-      inset: (y: -10pt),
+      inset: if metadata.template_style == "french" { (y: -10pt) } else {
+        -5pt
+      },
       stroke: none,
       footer-style([#first-name #last-name]), footer-style(footer-text),
     )
