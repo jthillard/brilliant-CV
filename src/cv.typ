@@ -131,7 +131,7 @@
             icon
           })
         } else if awesome-icon != "" {
-          icon = fa-icon(awesome-icon)
+          icon = box(width: 10pt, align(center, fa-icon(awesome-icon)))
         }
         let body = if text != "" {
           icon
@@ -140,7 +140,7 @@
         } else { icon }
         box(if link-value != "" { link(link-value)[#body] } else { body })
       } else {
-        let icon = icons.at(k)
+        let icon = box(width: 10pt, align(center, icons.at(k)))
         let dest = if k == "email" {
           "mailto:" + v
         } else if k == "linkedin" {
@@ -498,7 +498,7 @@
   } else {
     table(
       columns: (1fr, auto),
-      inset: -5pt,
+      inset: (y: -10pt),
       stroke: none,
       footer-style([#first-name #last-name]), footer-style(footer-text),
     )
