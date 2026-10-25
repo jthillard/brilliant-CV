@@ -253,15 +253,17 @@
 /// collapses to a fixed-height spacer regardless of `display-profile-photo`.
 /// -> content
 #let _make-header-photo-section(
+  metadata,
   display-profile-photo,
   profile-photo,
   profile-photo-radius,
 ) = {
-  set image(height: 3.6cm, width: 3.6cm)
+  let size = if metadata.template_style == "french" { 5cm } else { 3.6cm }
+  set image(height: size, width: size)
   if display-profile-photo and profile-photo != none {
     box(profile-photo, radius: profile-photo-radius, clip: true)
   } else {
-    v(3.6cm)
+    v(size)
   }
 }
 
@@ -379,6 +381,7 @@
   )
 
   let photo-section = _make-header-photo-section(
+    metadata,
     display-profile-photo,
     profile-photo,
     profile-photo-radius,
